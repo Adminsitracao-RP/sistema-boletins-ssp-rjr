@@ -307,7 +307,7 @@
                 <section class="lista-boletins" id="lista" style="display:none">
                     <h2>Boletins Registrados</h2>
                     <div class="search-bar">
-                        <input type="search" id="pesquisa" placeholder="Buscar por Nº do BOPM, nome, acusação, etc." oninput="renderizarBoletins()" />
+                        <input type="search" id="pesquisa" placeholder="Buscar por Nº do BOP, nome, acusação, etc." oninput="renderizarBoletins()" />
                     </div>
                     <div id="boletins" aria-live="polite"></div>
                 </section>
@@ -362,7 +362,7 @@
         let boletinsCache = [], usuarioLogado = null, boletimEmEdicaoId = null, usuarioEmEdicaoId = null, loginTimestamp = null, loginTimerInterval = null;
         
         const mainScreens = ['tela-boas-vindas', 'formulario', 'lista', 'tela-gerenciamento', 'tela-inicio'];
-        const webhookUrl = "https://discord.com/api/webhooks/1389378838987014286/Moiwne7D8I-yWfqMbSImlB9X2HciVluXJHBRwSxlwfe4A8jU-kp7rqbOmunWjbe_EpWp";
+        const webhookUrl = "https://discord.com/api/webhooks/1388198001553703043/n-S0Xbv28RHzp-wpKPOvnLHs6YOoLcLDB1TQxmX13NL8alXtVEWHmv2zHtLt6uAWRGI7";
         const logColors = { SUCCESS: 3066993, DANGER: 15158332, WARNING: 16776960, INFO: 3447003 };
 
         // [NOVO] Avatar padrão para usuários sem foto
@@ -402,7 +402,7 @@
             atualizarTempoDeLogin();
             renderizarProcurados();
         }
-        function abrirLista(boletimIdParaExpandir = null) { mostrarTela('lista'); const pesquisaInput = document.getElementById('pesquisa'); if (boletimIdParaExpandir) { const boletim = boletinsCache.find(b => b.id === boletimIdParaExpandir); if (boletim && boletim.numeroBOPM) { pesquisaInput.value = `BOPM Nº ${String(boletim.numeroBOPM).padStart(3, '0')}`; } else { pesquisaInput.value = ''; } } else { pesquisaInput.value = ''; } renderizarBoletins(boletimIdParaExpandir); }
+        function abrirLista(boletimIdParaExpandir = null) { mostrarTela('lista'); const pesquisaInput = document.getElementById('pesquisa'); if (boletimIdParaExpandir) { const boletim = boletinsCache.find(b => b.id === boletimIdParaExpandir); if (boletim && boletim.numeroBOP) { pesquisaInput.value = `BOP Nº ${String(boletim.numeroBOP).padStart(3, '0')}`; } else { pesquisaInput.value = ''; } } else { pesquisaInput.value = ''; } renderizarBoletins(boletimIdParaExpandir); }
         
         const abrirGerenciamento = () => { 
             mostrarTela('tela-gerenciamento'); 
@@ -629,8 +629,8 @@
             return { oficialResp: document.getElementById('oficialResp').value, oficiais: document.getElementById('oficiais').value, vitimas: v.filter(i=>i.nome), autores: a.filter(i=>i.nome), localEndereco: document.getElementById('localEndereco').value, localReferencia: document.getElementById('localReferencia').value, localData: document.getElementById('localData').value, relatoAgente: document.getElementById('relatoAgente').value }; 
         };
         const handleFormSubmit = () => boletimEmEdicaoId ? atualizarBoletim() : enviarBoletim();
-        function enviarBoletim() { if (!document.getElementById('oficialResp').value.trim()) { showFeedback('O campo "Oficial responsável" é obrigatório.', 'error'); return; } const counterRef = db.ref('metadata/boletimCounter'); counterRef.transaction(currentCount => (currentCount || 0) + 1).then(result => { if (!result.committed) { showFeedback('Não foi possível gerar o número do boletim. Tente novamente.', 'error'); return; } const novoNumeroBOPM = result.snapshot.val(); const boletim = coletarDadosDoFormulario(); boletim.criadoEm = new Date().toISOString(); boletim.numeroBOPM = novoNumeroBOPM; return db.ref('boletins').push(boletim).then(() => { const numeroFormatado = String(novoNumeroBOPM).padStart(3, '0'); showFeedback(`Boletim BOPM Nº ${numeroFormatado} criado com sucesso!`); const logDescription = formatarDadosBoletimParaLog(boletim); enviarLogParaDiscord(`✅ Novo Boletim Criado - BOPM Nº ${numeroFormatado}`, logDescription, logColors.SUCCESS); abrirLista(); }); }).catch(e => { console.error("Erro na transação do contador:", e); showFeedback('Erro crítico ao gerar número do boletim: ' + e.message, 'error'); }); }
-        function atualizarBoletim() { if (!document.getElementById('oficialResp').value.trim()) { showFeedback('O campo "Oficial responsável" é obrigatório.', 'error'); return; } const boletim = coletarDadosDoFormulario(); boletim.atualizadoEm = new Date().toISOString(); db.ref('boletins/' + boletimEmEdicaoId).update(boletim).then(() => { const boletimEditado = boletinsCache.find(b => b.id === boletimEmEdicaoId); const numeroFormatado = boletimEditado ? String(boletimEditado.numeroBOPM).padStart(3, '0') : `ID ${boletimEmEdicaoId}`; showFeedback('Boletim atualizado com sucesso!'); const logDescription = formatarDadosBoletimParaLog(boletim); enviarLogParaDiscord(`✏️ Boletim Editado - BOPM Nº ${numeroFormatado}`, logDescription, logColors.WARNING); abrirLista(); }).catch(e => showFeedback('Erro: ' + e.message, 'error')); }
+        function enviarBoletim() { if (!document.getElementById('oficialResp').value.trim()) { showFeedback('O campo "Oficial responsável" é obrigatório.', 'error'); return; } const counterRef = db.ref('metadata/boletimCounter'); counterRef.transaction(currentCount => (currentCount || 0) + 1).then(result => { if (!result.committed) { showFeedback('Não foi possível gerar o número do boletim. Tente novamente.', 'error'); return; } const novoNumeroBOP = result.snapshot.val(); const boletim = coletarDadosDoFormulario(); boletim.criadoEm = new Date().toISOString(); boletim.numeroBOP = novoNumeroBOP; return db.ref('boletins').push(boletim).then(() => { const numeroFormatado = String(novoNumeroBOP).padStart(3, '0'); showFeedback(`Boletim BOP Nº ${numeroFormatado} criado com sucesso!`); const logDescription = formatarDadosBoletimParaLog(boletim); enviarLogParaDiscord(`✅ Novo Boletim Criado - BOP Nº ${numeroFormatado}`, logDescription, logColors.SUCCESS); abrirLista(); }); }).catch(e => { console.error("Erro na transação do contador:", e); showFeedback('Erro crítico ao gerar número do boletim: ' + e.message, 'error'); }); }
+        function atualizarBoletim() { if (!document.getElementById('oficialResp').value.trim()) { showFeedback('O campo "Oficial responsável" é obrigatório.', 'error'); return; } const boletim = coletarDadosDoFormulario(); boletim.atualizadoEm = new Date().toISOString(); db.ref('boletins/' + boletimEmEdicaoId).update(boletim).then(() => { const boletimEditado = boletinsCache.find(b => b.id === boletimEmEdicaoId); const numeroFormatado = boletimEditado ? String(boletimEditado.numeroBOP).padStart(3, '0') : `ID ${boletimEmEdicaoId}`; showFeedback('Boletim atualizado com sucesso!'); const logDescription = formatarDadosBoletimParaLog(boletim); enviarLogParaDiscord(`✏️ Boletim Editado - BOP Nº ${numeroFormatado}`, logDescription, logColors.WARNING); abrirLista(); }).catch(e => showFeedback('Erro: ' + e.message, 'error')); }
         
         editarBoletim = function(id) { 
             const b = boletinsCache.find(bo => bo.id === id); 
@@ -648,13 +648,13 @@
             document.getElementById('autores').innerHTML = ''; 
             if (b.autores) b.autores.forEach(a => addAutor(a)); 
             document.getElementById('formSubmitButton').textContent = 'Atualizar Boletim'; 
-            const numeroFormatado = String(b.numeroBOPM).padStart(3, '0'); 
-            const titulo = b.numeroBOPM ? `Editando BOPM Nº ${numeroFormatado}` : `Editando Boletim ID: ${id}`; 
+            const numeroFormatado = String(b.numeroBOP).padStart(3, '0'); 
+            const titulo = b.numeroBOP ? `Editando BOP Nº ${numeroFormatado}` : `Editando Boletim ID: ${id}`; 
             document.getElementById('form-title').textContent = titulo; 
         };
         
-        function excluirBoletim(id) { if (confirm('Tem certeza que deseja excluir este boletim? Esta ação não pode ser desfeita.')) { const boletimExcluido = boletinsCache.find(b => b.id === id); db.ref('boletins/' + id).remove().then(() => { showFeedback('Boletim excluído com sucesso!'); if (boletimExcluido) { const numeroFormatado = String(boletimExcluido.numeroBOPM).padStart(3, '0'); const logDescription = formatarDadosBoletimParaLog(boletimExcluido); enviarLogParaDiscord(`❌ Boletim Excluído - BOPM Nº ${numeroFormatado}`, logDescription, logColors.DANGER); } else { enviarLogParaDiscord(`❌ Boletim Excluído - ID ${id}`, "Não foi possível recuperar os dados completos do boletim para o log.", logColors.DANGER); } }).catch(error => showFeedback('Erro ao excluir o boletim: ' + error.message, 'error')); } }
-        function inicializarListenerBoletins() { db.ref('boletins').on('value', snapshot => { const data = snapshot.val() || {}; boletinsCache = Object.entries(data).map(([id, values]) => ({ id, ...values })); boletinsCache.sort((a, b) => (b.numeroBOPM || 0) - (a.numeroBOPM || 0)); if (document.getElementById('lista').style.display === 'block') renderizarBoletins(); if (document.getElementById('tela-inicio').style.display === 'block') renderizarProcurados(); }); }
+        function excluirBoletim(id) { if (confirm('Tem certeza que deseja excluir este boletim? Esta ação não pode ser desfeita.')) { const boletimExcluido = boletinsCache.find(b => b.id === id); db.ref('boletins/' + id).remove().then(() => { showFeedback('Boletim excluído com sucesso!'); if (boletimExcluido) { const numeroFormatado = String(boletimExcluido.numeroBOP).padStart(3, '0'); const logDescription = formatarDadosBoletimParaLog(boletimExcluido); enviarLogParaDiscord(`❌ Boletim Excluído - BOP Nº ${numeroFormatado}`, logDescription, logColors.DANGER); } else { enviarLogParaDiscord(`❌ Boletim Excluído - ID ${id}`, "Não foi possível recuperar os dados completos do boletim para o log.", logColors.DANGER); } }).catch(error => showFeedback('Erro ao excluir o boletim: ' + error.message, 'error')); } }
+        function inicializarListenerBoletins() { db.ref('boletins').on('value', snapshot => { const data = snapshot.val() || {}; boletinsCache = Object.entries(data).map(([id, values]) => ({ id, ...values })); boletinsCache.sort((a, b) => (b.numeroBOP || 0) - (a.numeroBOP || 0)); if (document.getElementById('lista').style.display === 'block') renderizarBoletins(); if (document.getElementById('tela-inicio').style.display === 'block') renderizarProcurados(); }); }
         
         function renderizarBoletins(boletimIdParaExpandir = null) {
             const pesquisa = document.getElementById('pesquisa').value.toLowerCase().trim();
@@ -664,7 +664,7 @@
             const boletinsFiltrados = boletinsCache.filter(b => {
                 if (!pesquisa) return true;
                 const textosParaBuscar = [];
-                if (b.numeroBOPM) { textosParaBuscar.push(`bopm nº ${String(b.numeroBOPM).padStart(3, '0')}`); }
+                if (b.numeroBOP) { textosParaBuscar.push(`bop nº ${String(b.numeroBOP).padStart(3, '0')}`); }
                 textosParaBuscar.push(b.oficialResp || '');
                 textosParaBuscar.push(b.oficiais || '');
                 textosParaBuscar.push(b.relatoAgente || '');
@@ -722,8 +722,8 @@
                 if (hasManagerPermissions) { 
                     deleteBtnHtml = `<button class="btn btn-perigo" onclick="excluirBoletim('${b.id}')">Excluir</button>`; 
                 }
-                const numeroFormatado = b.numeroBOPM ? String(b.numeroBOPM).padStart(3, '0') : 'S/N';
-                const tituloBoletim = `BOPM Nº ${numeroFormatado}`;
+                const numeroFormatado = b.numeroBOP ? String(b.numeroBOP).padStart(3, '0') : 'S/N';
+                const tituloBoletim = `BOP Nº ${numeroFormatado}`;
                 const deveExpandir = b.id === boletimIdParaExpandir;
                 const displayStyle = deveExpandir ? 'block' : 'none';
                 item.innerHTML = `
